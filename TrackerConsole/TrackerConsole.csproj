@@ -56,7 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeviceTrackingData.cs" />
-    <Compile Include="HmdMatrix34Extensions.cs" />
+    <Compile Include="OpenVrExtensions.cs" />
     <Compile Include="openvr_api.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="Program.cs" />

@@ -4,7 +4,7 @@ using Valve.VR;
 
 namespace TrackerConsole
 {
-    static class HmdMatrix34Extensions
+    static class OpenVrExtensions
     {
         public static Vector3 GetPosition(this HmdMatrix34_t hmdMatrix)
         {
@@ -41,6 +41,11 @@ namespace TrackerConsole
             y = Copysign(y, matrix[0, 2] - matrix[2, 0]);
             z = Copysign(z, matrix[1, 0] - matrix[0, 1]);
             return new Quaternion(x, y, z, w);
+        }
+
+        public static Vector3 ToVelocityVector(this HmdVector3_t hmdVector)
+        {
+            return new Vector3(hmdVector.v0, hmdVector.v1, hmdVector.v2);
         }
 
         private static float Copysign(float sizeval, float signval)
