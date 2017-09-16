@@ -37,9 +37,9 @@ namespace TrackerConsole
             float x = (float)Math.Sqrt(Math.Max(0, 1 + matrix[0, 0] - matrix[1, 1] - matrix[2, 2])) / 2;
             float y = (float)Math.Sqrt(Math.Max(0, 1 - matrix[0, 0] + matrix[1, 1] - matrix[2, 2])) / 2;
             float z = (float)Math.Sqrt(Math.Max(0, 1 - matrix[0, 0] - matrix[1, 1] + matrix[2, 2])) / 2;
-            x = Copysign(x, matrix[2, 1] - matrix[1, 2]);
-            y = Copysign(y, matrix[0, 2] - matrix[2, 0]);
-            z = Copysign(z, matrix[1, 0] - matrix[0, 1]);
+            x = CopySign(x, matrix[2, 1] - matrix[1, 2]);
+            y = CopySign(y, matrix[0, 2] - matrix[2, 0]);
+            z = CopySign(z, matrix[1, 0] - matrix[0, 1]);
             return new Quaternion(x, y, z, w);
         }
 
@@ -48,7 +48,7 @@ namespace TrackerConsole
             return new Vector3(hmdVector.v0, hmdVector.v1, hmdVector.v2);
         }
 
-        private static float Copysign(float sizeval, float signval)
+        private static float CopySign(float sizeval, float signval)
         {
             return Math.Sign(signval) == 1 ? Math.Abs(sizeval) : -Math.Abs(sizeval);
         }
