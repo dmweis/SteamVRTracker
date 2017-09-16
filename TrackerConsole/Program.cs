@@ -25,12 +25,6 @@ namespace TrackerConsole
                 Console.ReadLine();
             }
             Console.WriteLine("Shutdown complete");
-            //Console.WriteLine("Start");
-            //TrackerService trackerService = new TrackerService();
-            //Console.WriteLine("press enter to exit");
-            //Console.ReadLine();
-            //trackerService.Dispose();
-            //Console.WriteLine("Shutdown complete");
         }
     }
 }
