@@ -58,10 +58,8 @@
     <Compile Include="DeviceTrackingData.cs" />
     <Compile Include="OpenVrExtensions.cs" />
     <Compile Include="openvr_api.cs" />
-    <Compile Include="Position.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rotation.cs" />
     <Compile Include="TrackerService.cs" />
   </ItemGroup>
   <ItemGroup>
