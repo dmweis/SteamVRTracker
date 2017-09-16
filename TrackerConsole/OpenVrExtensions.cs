@@ -6,7 +6,7 @@ namespace TrackerConsole
 {
     static class OpenVrExtensions
     {
-        public static Vector3 GetPosition(this HmdMatrix34_t hmdMatrix)
+        public static Vector3 ToPositionVector(this HmdMatrix34_t hmdMatrix)
         {
             float x = hmdMatrix.m3;
             float y = hmdMatrix.m7;
@@ -14,7 +14,7 @@ namespace TrackerConsole
             return new Vector3(x, y, z);
         }
 
-        public static Quaternion GetRotation(this HmdMatrix34_t hmdMatrix)
+        public static Quaternion ToRotationQuaternion(this HmdMatrix34_t hmdMatrix)
         {
             float[,] matrix = new float[4, 4];
 

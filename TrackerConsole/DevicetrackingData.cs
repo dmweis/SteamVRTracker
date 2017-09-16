@@ -12,8 +12,8 @@ namespace TrackerConsole
         public DeviceTrackingData(int deviceIndex, HmdMatrix34_t hmdMatrix)
         {
             DeviceIndex = deviceIndex;
-            Position = hmdMatrix.GetPosition();
-            Rotation = hmdMatrix.GetRotation();
+            Position = hmdMatrix.ToPositionVector();
+            Rotation = hmdMatrix.ToRotationQuaternion();
         }
 
         public DeviceTrackingData(int deviceIndex, Vector3 position, Quaternion rotation)

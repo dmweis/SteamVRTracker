@@ -60,13 +60,13 @@ namespace TrackerConsole
                                     HmdMatrix34_t trackingMatrix = trackedDevicePoses[trackedDeviceIndex].mDeviceToAbsoluteTracking;
                                     if (menuButton && !_previousButtonState[trackedDeviceIndex])
                                     {
-                                        _relativeAnchors[trackedDeviceIndex] = trackingMatrix.GetPosition();
+                                        _relativeAnchors[trackedDeviceIndex] = trackingMatrix.ToPositionVector();
                                     }
                                     _previousButtonState[trackedDeviceIndex] = menuButton;
 
                                     Vector3 speedVector = trackedDevicePoses[trackedDeviceIndex].vVelocity.ToVelocityVector();
-                                    Vector3 position = trackingMatrix.GetPosition() - _relativeAnchors[(int) trackedDeviceIndex];
-                                    DeviceTrackingData trackingUpdate = new DeviceTrackingData((int)trackedDeviceIndex, position * 100, trackingMatrix.GetRotation());
+                                    Vector3 position = trackingMatrix.ToPositionVector() - _relativeAnchors[(int) trackedDeviceIndex];
+                                    DeviceTrackingData trackingUpdate = new DeviceTrackingData((int)trackedDeviceIndex, position * 100, trackingMatrix.ToRotationQuaternion());
                                     if (trigger)
                                     {
                                         Console.WriteLine($"position {trackingUpdate.Position}");
