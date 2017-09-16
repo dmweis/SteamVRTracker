@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ControllerButtonState.cs" />
     <Compile Include="DeviceTrackingData.cs" />
     <Compile Include="OpenVrExtensions.cs" />
     <Compile Include="openvr_api.cs" />

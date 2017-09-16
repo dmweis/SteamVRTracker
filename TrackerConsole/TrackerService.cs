@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Numerics;
 using System.Threading;
 using Valve.VR;
@@ -9,9 +12,14 @@ namespace TrackerConsole
     {
         private readonly Thread _openVrThread;
         private const int UpdatedInterval = 20;
-        
+
         private readonly Vector3[] _relativeAnchors = new Vector3[OpenVR.k_unMaxTrackedDeviceCount];
-        private readonly bool[] _previousButtonState = new bool[OpenVR.k_unMaxTrackedDeviceCount];
+        //private readonly ControllerButtonState[] _previousButtonState = new ControllerButtonState[OpenVR.k_unMaxTrackedDeviceCount];
+        private readonly ControllerButtonState[] _previousButtonState = 
+            Enumerable
+            .Range(1, (int)OpenVR.k_unMaxTrackedDeviceCount)
+            .Select(num => new ControllerButtonState())
+            .ToArray();
 
         private bool _keepReading = true;
 
@@ -54,18 +62,32 @@ namespace TrackerConsole
 
                                 bool trigger = controllerState.rAxis1.x > 0.9f;
                                 bool menuButton = (controllerState.ulButtonPressed & (1ul << (int)EVRButtonId.k_EButton_ApplicationMenu)) != 0;
+                                bool gripButton = (controllerState.ulButtonPressed & (1ul << (int)EVRButtonId.k_EButton_Grip)) != 0;
 
                                 if (trackingResult == ETrackingResult.Running_OK)
                                 {
+                                    // check and update Trigger
+                                    if (trigger && !_previousButtonState[trackedDeviceIndex].Trigger)
+                                    {
+                                        Console.WriteLine("Trigger pressed");
+                                    }
+                                    _previousButtonState[trackedDeviceIndex].Trigger = trigger;
+                                    // check and update grip
+                                    if (gripButton && !_previousButtonState[trackedDeviceIndex].GripButton)
+                                    {
+                                        Console.WriteLine("GripButton pressed");
+                                    }
+                                    _previousButtonState[trackedDeviceIndex].GripButton = gripButton;
+                                    // if menu button down save anchor
                                     HmdMatrix34_t trackingMatrix = trackedDevicePoses[trackedDeviceIndex].mDeviceToAbsoluteTracking;
-                                    if (menuButton && !_previousButtonState[trackedDeviceIndex])
+                                    if (menuButton && !_previousButtonState[trackedDeviceIndex].MenuButton)
                                     {
                                         _relativeAnchors[trackedDeviceIndex] = trackingMatrix.ToPositionVector();
                                     }
-                                    _previousButtonState[trackedDeviceIndex] = menuButton;
+                                    _previousButtonState[trackedDeviceIndex].MenuButton = menuButton;
 
                                     Vector3 speedVector = trackedDevicePoses[trackedDeviceIndex].vVelocity.ToVelocityVector();
-                                    Vector3 position = trackingMatrix.ToPositionVector() - _relativeAnchors[(int) trackedDeviceIndex];
+                                    Vector3 position = trackingMatrix.ToPositionVector() - _relativeAnchors[(int)trackedDeviceIndex];
                                     DeviceTrackingData trackingUpdate = new DeviceTrackingData((int)trackedDeviceIndex, position * 100, trackingMatrix.ToRotationQuaternion());
                                     if (trigger)
                                     {
@@ -80,7 +102,7 @@ namespace TrackerConsole
                     Thread.Sleep(UpdatedInterval);
                 }
             }
-            finally 
+            finally
             {
                 OpenVR.Shutdown();
             }
