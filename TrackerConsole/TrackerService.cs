@@ -64,6 +64,7 @@ namespace TrackerConsole
 
                                 if (trackingResult == ETrackingResult.Running_OK)
                                 {
+                                    bool poseWasUpdated = false;
                                     // check and update Trigger
                                     if (trigger && !_previousButtonState[trackedDeviceIndex].Trigger)
                                     {
@@ -80,6 +81,7 @@ namespace TrackerConsole
                                     HmdMatrix34_t trackingMatrix = trackedDevicePoses[trackedDeviceIndex].mDeviceToAbsoluteTracking;
                                     if (menuButton && !_previousButtonState[trackedDeviceIndex].MenuButton)
                                     {
+                                        poseWasUpdated = true;
                                         _relativeAnchors[trackedDeviceIndex] = trackingMatrix.ToPositionVector();
                                     }
                                     _previousButtonState[trackedDeviceIndex].MenuButton = menuButton;
@@ -87,7 +89,7 @@ namespace TrackerConsole
                                     Vector3 speedVector = trackedDevicePoses[trackedDeviceIndex].vVelocity.ToVelocityVector();
                                     Vector3 position = trackingMatrix.ToPositionVector() - _relativeAnchors[(int)trackedDeviceIndex];
                                     DeviceTrackingData trackingUpdate = new DeviceTrackingData((int)trackedDeviceIndex, position * 100, trackingMatrix.ToRotationQuaternion());
-                                    if (trigger)
+                                    if (trigger || poseWasUpdated)
                                     {
                                         Console.WriteLine($"position {trackingUpdate.Position}");
                                         NewPoseUpdate?.Invoke(this, trackingUpdate);
