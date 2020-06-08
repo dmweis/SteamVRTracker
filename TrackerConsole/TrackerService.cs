@@ -19,9 +19,16 @@ namespace TrackerConsole
             .Select(num => new ControllerButtonState())
             .ToArray();
 
-        private bool _keepReading = true;
+        private volatile bool _keepReading = true;
 
         public event EventHandler<DeviceTrackingData> NewPoseUpdate;
+
+        private ChaperonePlayArea _playArea;
+        public ChaperonePlayArea PlayArea
+        {
+            get { return _playArea; }
+        }
+
 
         public TrackerService()
         {
@@ -39,6 +46,10 @@ namespace TrackerConsole
             {
                 EVRInitError initError = EVRInitError.None;
                 CVRSystem cvrSystem = OpenVR.Init(ref initError, EVRApplicationType.VRApplication_Utility);
+                var chaperone = OpenVR.Chaperone;
+                var quadArea = new HmdQuad_t();
+                chaperone.GetPlayAreaRect(ref quadArea);
+                _playArea = quadArea.ToPlayArea();
                 if (initError != EVRInitError.None)
                 {
                     throw new InvalidOperationException($"EVR init erro: {initError}");
@@ -46,13 +57,13 @@ namespace TrackerConsole
                 while (_keepReading)
                 {
                     TrackedDevicePose_t[] trackedDevicePoses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-                    cvrSystem.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseRawAndUncalibrated, 0f, trackedDevicePoses);
+                    cvrSystem.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0f, trackedDevicePoses);
                     for (uint trackedDeviceIndex = 0; trackedDeviceIndex < OpenVR.k_unMaxTrackedDeviceCount; trackedDeviceIndex++)
                     {
                         if (cvrSystem.IsTrackedDeviceConnected(trackedDeviceIndex))
                         {
                             ETrackedDeviceClass deviceClass = cvrSystem.GetTrackedDeviceClass(trackedDeviceIndex);
-                            if (deviceClass == ETrackedDeviceClass.Controller)
+                            if (true)
                             {
                                 VRControllerState_t controllerState = new VRControllerState_t();
                                 cvrSystem.GetControllerState(1, ref controllerState, (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VRControllerState_t)));
@@ -64,36 +75,14 @@ namespace TrackerConsole
 
                                 if (trackingResult == ETrackingResult.Running_OK)
                                 {
-                                    bool poseWasUpdated = false;
-                                    // check and update Trigger
-                                    if (trigger && !_previousButtonState[trackedDeviceIndex].Trigger)
-                                    {
-                                        Console.WriteLine("Trigger pressed");
-                                    }
-                                    _previousButtonState[trackedDeviceIndex].Trigger = trigger;
-                                    // check and update grip
-                                    if (gripButton && !_previousButtonState[trackedDeviceIndex].GripButton)
-                                    {
-                                        Console.WriteLine("GripButton pressed");
-                                    }
-                                    _previousButtonState[trackedDeviceIndex].GripButton = gripButton;
-                                    // if menu button down save anchor
+                                    
                                     HmdMatrix34_t trackingMatrix = trackedDevicePoses[trackedDeviceIndex].mDeviceToAbsoluteTracking;
-                                    if (menuButton && !_previousButtonState[trackedDeviceIndex].MenuButton)
-                                    {
-                                        poseWasUpdated = true;
-                                        _relativeAnchors[trackedDeviceIndex] = trackingMatrix.ToPositionVector();
-                                    }
-                                    _previousButtonState[trackedDeviceIndex].MenuButton = menuButton;
 
                                     Vector3 speedVector = trackedDevicePoses[trackedDeviceIndex].vVelocity.ToVelocityVector();
-                                    Vector3 position = trackingMatrix.ToPositionVector() - _relativeAnchors[(int)trackedDeviceIndex];
-                                    DeviceTrackingData trackingUpdate = new DeviceTrackingData((int)trackedDeviceIndex, position * 100, trackingMatrix.ToRotationQuaternion());
-                                    if (trigger || poseWasUpdated)
-                                    {
-                                        Console.WriteLine($"position {trackingUpdate.Position}");
-                                        NewPoseUpdate?.Invoke(this, trackingUpdate);
-                                    }
+                                    Vector3 position = trackingMatrix.ToPositionVector();
+                                    DeviceTrackingData trackingUpdate = new DeviceTrackingData((int)trackedDeviceIndex, deviceClass.ToString(), position, trackingMatrix.ToRotationQuaternion());
+                                    NewPoseUpdate?.Invoke(this, trackingUpdate);
+                                    
                                 }
 
                             }
@@ -101,6 +90,10 @@ namespace TrackerConsole
                     }
                     Thread.Sleep(UpdatedInterval);
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e}");
             }
             finally
             {

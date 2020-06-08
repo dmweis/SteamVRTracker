@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Valve.VR;
 
@@ -46,6 +47,16 @@ namespace TrackerConsole
         public static Vector3 ToVelocityVector(this HmdVector3_t hmdVector)
         {
             return new Vector3(hmdVector.v0, hmdVector.v1, hmdVector.v2);
+        }
+
+        public static ChaperonePlayArea ToPlayArea(this HmdQuad_t hmdQuad)
+        {
+            var points = new List<Vector3>();
+            points.Add(hmdQuad.vCorners0.ToVelocityVector());
+            points.Add(hmdQuad.vCorners1.ToVelocityVector());
+            points.Add(hmdQuad.vCorners2.ToVelocityVector());
+            points.Add(hmdQuad.vCorners3.ToVelocityVector());
+            return new ChaperonePlayArea(points);
         }
 
         private static float CopySign(float sizeval, float signval)
